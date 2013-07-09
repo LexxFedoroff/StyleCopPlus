@@ -52,9 +52,15 @@
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="StyleCop" />
-    <Reference Include="StyleCop.CSharp" />
-    <Reference Include="StyleCop.CSharp.Rules" />
+    <Reference Include="StyleCop">
+      <HintPath>..\..\..\Program Files (x86)\StyleCop 4.7\StyleCop.dll</HintPath>
+    </Reference>
+    <Reference Include="StyleCop.CSharp">
+      <HintPath>..\..\..\Program Files (x86)\StyleCop 4.7\StyleCop.CSharp.dll</HintPath>
+    </Reference>
+    <Reference Include="StyleCop.CSharp.Rules">
+      <HintPath>..\..\..\Program Files (x86)\StyleCop 4.7\StyleCop.CSharp.Rules.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>

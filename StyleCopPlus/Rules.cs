@@ -76,7 +76,12 @@
 		/// <summary>
 		/// Validates that source file does not contain more code lines than specified.
 		/// </summary>
-		FileMustNotContainMoreLinesThan
+		FileMustNotContainMoreLinesThan,
+
+		/// <summary>
+		/// Validates that type have full CLR type name.
+		/// </summary>
+		UseClrType,
 
 		#endregion
 	}

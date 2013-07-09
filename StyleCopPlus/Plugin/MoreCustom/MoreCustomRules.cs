@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Text;
 using StyleCop;
 using StyleCop.CSharp;
@@ -13,6 +15,29 @@ namespace StyleCopPlus.Plugin.MoreCustom
 	public class MoreCustomRules
 	{
 		private readonly StyleCopPlusRules m_parent;
+
+		/// <summary>
+		/// The built-in type aliases for C#.
+		/// </summary>
+		private readonly string[][] _builtInTypes =
+		{
+			new[] { "Boolean", "System.Boolean", "bool" }, 
+			new[] { "Object", "System.Object", "object" }, 
+			new[] { "String", "System.String", "string" }, 
+			new[] { "Int16", "System.Int16", "short" }, 
+			new[] { "UInt16", "System.UInt16", "ushort" }, 
+			new[] { "Int32", "System.Int32", "int" }, 
+			new[] { "UInt32", "System.UInt32", "uint" }, 
+			new[] { "Int64", "System.Int64", "long" }, 
+			new[] { "UInt64", "System.UInt64", "ulong" },
+			new[] { "Double", "System.Double", "double" }, 
+			new[] { "Single", "System.Single", "float" },
+			new[] { "Byte", "System.Byte", "byte" }, 
+			new[] { "SByte", "System.SByte", "sbyte" },
+			new[] { "Char", "System.Char", "char" }, 
+			new[] { "Decimal", "System.Decimal", "decimal" }
+		};
+
 
 		/// <summary>
 		/// Initializes a new instance.
@@ -36,6 +61,106 @@ namespace StyleCopPlus.Plugin.MoreCustom
 			CsDocument doc = (CsDocument)document;
 			AnalyzePlainText(doc, settings);
 			AnalyzeElements(doc.RootElement.ChildElements, settings);
+
+			doc.WalkDocument(null, null, ProcessExpression, null);
+			IterateTokenList(doc);
+		}
+
+		private bool ProcessExpression(Expression expression, Expression parentExpression, Statement parentStatement, CsElement parentElement, object context)
+		{
+			if (!parentElement.Generated)
+			{
+				switch (expression.ExpressionType)
+				{
+					case ExpressionType.MemberAccess:
+						this.CheckBuiltInTypeForMemberAccessExpressions(((MemberAccessExpression)expression).LeftHandSide.Tokens.First);
+						break;
+				}
+			}
+
+			return true;
+		}
+
+		private void IterateTokenList(CsDocument document)
+		{
+			for (Node<CsToken> tokenNode = document.Tokens.First; tokenNode != null; tokenNode = tokenNode.Next)
+			{
+				CsToken token = tokenNode.Value;
+
+				if (token.CsTokenClass == CsTokenClass.Type || token.CsTokenClass == CsTokenClass.GenericType)
+				{
+					this.CheckBuiltInType(tokenNode, document);
+				}
+			}
+		}
+
+		private void CheckBuiltInType(Node<CsToken> type, CsDocument document)
+		{
+			TypeToken typeToken = (TypeToken)type.Value;
+
+			if (type.Value.CsTokenClass != CsTokenClass.GenericType)
+			{
+				for (int i = 0; i < _builtInTypes.Length; ++i)
+				{
+					string[] builtInType = _builtInTypes[i];
+
+					if (CsTokenList.MatchTokens(typeToken.ChildTokens.First, builtInType[2]))
+					{
+						// If the previous token is an equals sign, then this is a using alias directive. For example:
+						// using SomeAlias = System.String;
+						bool usingAliasDirective = false;
+						for (Node<CsToken> previous = type.Previous; previous != null; previous = previous.Previous)
+						{
+							if (previous.Value.CsTokenType != CsTokenType.EndOfLine && previous.Value.CsTokenType != CsTokenType.MultiLineComment
+								&& previous.Value.CsTokenType != CsTokenType.SingleLineComment && previous.Value.CsTokenType != CsTokenType.WhiteSpace)
+							{
+								if (previous.Value.Text == "=")
+								{
+									usingAliasDirective = true;
+								}
+
+								break;
+							}
+						}
+
+						if (!usingAliasDirective)
+						{
+							m_parent.AddViolation(
+								typeToken.FindParentElement(), typeToken.LineNumber, Rules.UseClrType, builtInType[2], builtInType[0], builtInType[1]);
+						}
+
+						break;
+					}
+				}
+			}
+
+			for (Node<CsToken> childToken = typeToken.ChildTokens.First; childToken != null; childToken = childToken.Next)
+			{
+				if (childToken.Value.CsTokenClass == CsTokenClass.Type || childToken.Value.CsTokenClass == CsTokenClass.GenericType)
+				{
+					this.CheckBuiltInType(childToken, document);
+				}
+			}
+		}
+
+		/// <summary>
+		/// Checks a type to determine whether it should use one of the built-in types.
+		/// </summary>
+		/// <param name="type">
+		/// The type to check.
+		/// </param>
+		private void CheckBuiltInTypeForMemberAccessExpressions(Node<CsToken> type)
+		{
+			for (int i = 0; i < this._builtInTypes.Length; ++i)
+			{
+				string[] builtInType = this._builtInTypes[i];
+
+				if (CsTokenList.MatchTokens(type, builtInType[2]))
+				{
+					m_parent.AddViolation(type.Value.FindParentElement(), type.Value.LineNumber, Rules.UseClrType, builtInType[2], builtInType[0], builtInType[1]);
+					break;
+				}
+			}
 		}
 
 		#region Plain text analysis

@@ -1064,3 +1064,34 @@ namespace StyleCopPlus.Tests
 //# [END]
 
 #endregion
+
+#region UseClrType // SP1121
+
+//# [ERROR:5]
+//# Aliases restricted. Use CLR type name.
+
+namespace StyleCopPlus.Tests
+{
+	public class TestClass
+	{
+		public static void Main(string[] strings)
+		{
+			System.Single q = 5f;
+		}
+
+		public TestClass()
+		{
+			int i = 5;
+			System.Int32 j = 5;
+
+			int.Parse("asd");
+			System.Action<float> action = v =>
+			{
+				uint h = 5;
+			};
+		}
+	}
+}
+//# [END]
+
+#endregion
