@@ -261,3 +261,43 @@ namespace StyleCopPlus.Tests
 //# [END]
 
 #endregion
+
+#region DestructorSummaryDocumentationMustBeginWithStandardText // SP1643
+
+//# [OK]
+//# Allows any destructor to have the following summary text: "Finalizes an instance."
+namespace StyleCopPlus.Tests
+{
+	public class TestClass
+	{
+		/// <summary>
+		/// Finalizes an instance.
+		/// </summary>
+		~TestClass()
+		{
+		}
+	}
+}
+//# [END]
+
+#endregion
+
+#region ConstructorSummaryDocumentationMustBeginWithStandardText // SP1642
+
+//# [OK]
+//# Allows any constructor to have the following summary text: "Initializes a new instance."
+namespace StyleCopPlus.Tests
+{
+	public class TestClass
+	{
+		/// <summary>
+		/// Initializes a new instance.
+		/// </summary>
+		TestClass()
+		{
+		}
+	}
+}
+//# [END]
+
+#endregion

@@ -275,7 +275,7 @@ namespace StyleCopPlus.Plugin.ExtendedOriginal
 			m_parent.AddViolation(
 				element,
 				Rules.ConstructorSummaryDocumentationMustBeginWithStandardText,
-				new object[] { GetExampleSummaryTextForConstructor(m_customDocumentationAnalyzer, element) });
+				new object[] { GetExampleSummaryTextForConstructor(m_customDocumentationAnalyzer, (Constructor)element) });
 		}
 
 		/// <summary>
@@ -292,7 +292,7 @@ namespace StyleCopPlus.Plugin.ExtendedOriginal
 			m_parent.AddViolation(
 				element,
 				Rules.DestructorSummaryDocumentationMustBeginWithStandardText,
-				new object[] { GetExampleSummaryTextForDestructor(m_customDocumentationAnalyzer) });
+				new object[] { GetExampleSummaryTextForDestructor(m_customDocumentationAnalyzer, (Destructor)element) });
 		}
 
 		#endregion
@@ -340,28 +340,28 @@ namespace StyleCopPlus.Plugin.ExtendedOriginal
 		/// <summary>
 		/// Gets example summary text for constructor.
 		/// </summary>
-		public static string GetExampleSummaryTextForConstructor(SourceAnalyzer customDocumentationAnalyzer, ICodeUnit constructor)
+		public static string GetExampleSummaryTextForConstructor(SourceAnalyzer customDocumentationAnalyzer, Constructor constructor)
 		{
 			string type = (constructor.Parent is Struct) ? "struct" : "class";
 			return (string)typeof(DocumentationRules).InvokeMember(
 				"GetExampleSummaryTextForConstructorType",
 				BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.InvokeMethod,
 				null,
-				customDocumentationAnalyzer,
+				null,
 				new object[] { constructor, type });
 		}
 
 		/// <summary>
 		/// Gets example summary text for destructor.
 		/// </summary>
-		public static string GetExampleSummaryTextForDestructor(SourceAnalyzer customDocumentationAnalyzer)
+		public static string GetExampleSummaryTextForDestructor(SourceAnalyzer customDocumentationAnalyzer, Destructor destructor)
 		{
 			return (string)typeof(DocumentationRules).InvokeMember(
 				"GetExampleSummaryTextForDestructor",
 				BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.InvokeMethod,
 				null,
-				customDocumentationAnalyzer,
-				null);
+				null,
+				new object[] { destructor });
 		}
 
 		#endregion
